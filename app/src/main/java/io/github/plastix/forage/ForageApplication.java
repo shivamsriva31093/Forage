@@ -10,6 +10,7 @@ import javax.inject.Inject;
 
 import dagger.Lazy;
 import io.github.plastix.forage.dev_tools.DevMetricsProxy;
+import io.realm.Realm;
 import timber.log.Timber;
 
 public class ForageApplication extends Application {
@@ -39,12 +40,18 @@ public class ForageApplication extends Application {
         this.component = prepareApplicationComponent().build();
         this.component.injectTo(this);
 
+        Realm.init(this);
+
         //Use debug tools only in debug builds
         if (BuildConfig.DEBUG) {
-            LeakCanary.install(this);
-            Timber.plant(debugTree.get());
-            devMetricsProxy.get().apply();
+            setupDebugTools();
         }
+    }
+
+    private void setupDebugTools() {
+        Timber.plant(debugTree.get());
+        LeakCanary.install(this);
+        devMetricsProxy.get().apply();
     }
 
     @NonNull
@@ -52,5 +59,6 @@ public class ForageApplication extends Application {
         return DaggerApplicationComponent.builder()
                 .applicationModule(new ApplicationModule(this));
     }
+
 
 }
